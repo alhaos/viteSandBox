@@ -1,4 +1,4 @@
-name: Deploy React App to CentOS
+name: Deploy Vite React App
 
 on:
   push:
@@ -9,39 +9,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Шаг 1: Checkout кода
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      # Шаг 1: Загрузка кода
+      - uses: actions/checkout@v4
 
       # Шаг 2: Установка Node.js
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      # Шаг 3: Сборка проекта
+      # Шаг 3: Установка зависимостей и сборка
       - name: Install and build
         run: |
           npm install
           npm run build
 
-      # Шаг 4: Деплой на сервер через SSH/SCP
-      - name: Deploy via SSH
-        uses: appleboy/scp-action@v0.1.0  # Явно указываем версию
+      # Шаг 4: Проверка содержимого папки dist/
+      - name: Debug - List files in dist/
+        run: ls -R dist/
+
+      # Шаг 5: Деплой на сервер
+      - name: Deploy to server
+        uses: appleboy/scp-action@v0.1.0
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: "build/*"
+          source: "dist/*"           # Указываем папку dist/
           target: "/var/www/react-app"
           overwrite: true
 
-      # Шаг 5: Перезапуск Nginx
+      # Шаг 6: Перезапуск Nginx
       - name: Restart Nginx
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            sudo systemctl restart nginx
+        uses: appleboy/ssh-action
