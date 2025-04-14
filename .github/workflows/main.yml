@@ -2,14 +2,14 @@ name: Deploy React App to CentOS
 
 on:
   push:
-    branches: [ "main" ]  # Триггер на пуш в main
+    branches: [ "main" ]
 
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest  # Сборка на виртуальном сервере GitHub
+  deploy:
+    runs-on: ubuntu-latest
 
     steps:
-      # Шаг 1: Загрузка кода
+      # Шаг 1: Checkout кода
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -17,31 +17,31 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
 
-      # Шаг 3: Установка зависимостей и сборка
-      - name: Install dependencies and build
+      # Шаг 3: Сборка проекта
+      - name: Install and build
         run: |
           npm install
           npm run build
 
-      # Шаг 4: Копирование файлов на сервер через SCP
-      - name: Deploy via SCP
-        uses: appleboy/scp-action@v1
+      # Шаг 4: Деплой на сервер через SSH/SCP
+      - name: Deploy via SSH
+        uses: appleboy/scp-action@v0.1.0  # Явно указываем версию
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: "build/*"          # Папка с собранным проектом
-          target: "/var/www/react-app"  # Куда копируем
-          overwrite: true             # Перезаписывать существующие файлы
+          source: "build/*"
+          target: "/var/www/react-app"
+          overwrite: true
 
-      # Шаг 5 (опционально): Перезапуск Nginx или systemd-службы
+      # Шаг 5: Перезапуск Nginx
       - name: Restart Nginx
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            sudo systemctl restart nginx  # Если используете Nginx
+            sudo systemctl restart nginx
