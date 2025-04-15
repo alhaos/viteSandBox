@@ -1,19 +1,17 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import Header from './components/Header'
+import Button from './components/Button/Button'
+import { data } from './data'
 
 function App() {
-  const [count, setCount] = useState(0)
-
-  const now = new Date()
-
   return (
-    <>
-      <div>
-        <h1>Vite + React</h1>
-      </div>
-    </>
+    <div>
+      <Header {...data[0]} />
+      <div>Hello world</div>
+      <section>
+        <Button>Hello world</Button>
+      </section>
+    </div>
   )
 }
 
